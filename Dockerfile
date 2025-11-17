@@ -1,5 +1,5 @@
 # Multi-stage build for MongoDB Kafka Data Streaming
-FROM maven:3.8.6-openjdk-11-slim AS builder
+FROM maven:3.9.5-eclipse-temurin-11-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,15 +17,13 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11-jre-alpine
 
 # Install curl for health checks
-RUN apt-get update && \
-    apt-get install -y curl && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
 # Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN addgroup -g 1000 appuser && adduser -u 1000 -G appuser -s /bin/sh -D appuser
 
 # Set working directory
 WORKDIR /app
