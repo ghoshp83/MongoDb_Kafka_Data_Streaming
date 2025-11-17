@@ -9,7 +9,7 @@
 
 <div align="center">
   <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/CI%20Pipeline/badge.svg" alt="CI Pipeline">
-  <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/Docker%20Build%20workflows/Docker%20Build%20&%20Push/badge.svg%20Push/badge.svg" alt="Docker Build">
+  <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/Docker%20Build%20workflows/Docker%20Build%20workflows/Docker%20Build%20&%20Push/badge.svg%20Push/badge.svg%20Push/badge.svg" alt="Docker Build">
   <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/CodeQL%20Security%20Analysis/badge.svg" alt="CodeQL">
   <img src="https://codecov.io/gh/ghoshp83/MongoDb_Kafka_Data_Streaming/branch/main/graph/badge.svg" alt="Coverage">
 </div>
