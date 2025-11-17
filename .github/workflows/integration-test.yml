@@ -30,7 +30,7 @@ jobs:
     - name: Start test environment
       run: |
         cd docker
-        docker-compose up -d mongodb kafka zookeeper
+        docker compose up -d mongodb kafka zookeeper
         sleep 30  # Wait for services to be ready
     
     - name: Wait for MongoDB
@@ -60,4 +60,4 @@ jobs:
       if: always()
       run: |
         cd docker
-        docker-compose down -v
+        docker compose down -v
