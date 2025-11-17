@@ -254,13 +254,14 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>8.4.2</version>
+                <version>9.0.7</version>
                 <configuration>
                     <format>HTML</format>
                     <format>XML</format>
                     <suppressionFiles>
                         <suppressionFile>owasp-suppressions.xml</suppressionFile>
                     </suppressionFiles>
+                    <nvdApiServicesEnabled>false</nvdApiServicesEnabled>
                 </configuration>
             </plugin>
         </plugins>
@@ -295,7 +296,10 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>8.4.2</version>
+                        <version>9.0.7</version>
+                        <configuration>
+                            <nvdApiServicesEnabled>false</nvdApiServicesEnabled>
+                        </configuration>
                         <executions>
                             <execution>
                                 <goals>
