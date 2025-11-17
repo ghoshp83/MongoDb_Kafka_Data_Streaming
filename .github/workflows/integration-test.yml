@@ -22,7 +22,7 @@ jobs:
         distribution: 'temurin'
     
     - name: Cache Maven dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -48,7 +48,7 @@ jobs:
         KAFKA_BOOTSTRAP_SERVERS: localhost:9092
     
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: integration-test-results
