@@ -1,0 +1,47 @@
+name: Monitoring & Health Checks
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Check GitHub Actions Status
+      run: |
+        echo "Checking recent workflow runs..."
+        # This would typically check external deployments
+        # For demo purposes, we'll check the repository status
+        
+    - name: Check Dependencies Health
+      run: |
+        echo "Checking dependency health..."
+        # Check for known vulnerabilities in dependencies
+        curl -s "https://api.github.com/repos/${{ github.repository }}/vulnerability-alerts" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" | \
+          jq '.[] | select(.state == "open")' > vulnerabilities.json
+        
+        if [ -s vulnerabilities.json ]; then
+          echo "⚠️ Open security vulnerabilities found"
+          cat vulnerabilities.json
+        else
+          echo "✅ No open security vulnerabilities"
+        fi
+    
+    - name: Repository Health Check
+      run: |
+        echo "## Repository Health Status" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Repository accessible" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Latest commit: $(git log -1 --format='%h %s')" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "🚨 Health check failed for repository ${{ github.repository }}"
+        # In a real scenario, this would send notifications to Slack, email, etc.

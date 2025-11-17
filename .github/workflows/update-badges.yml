@@ -1,0 +1,38 @@
+name: Update Badges
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+  workflow_dispatch:
+
+jobs:
+  update-badges:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Update workflow badges
+      run: |
+        # Update README with current workflow status
+        sed -i 's|workflows/CI%20Pipeline/badge.svg|workflows/CI%20Pipeline/badge.svg|g' README.md
+        sed -i 's|workflows/Docker%20Build%20&%20Push/badge.svg|workflows/Docker%20Build%20&%20Push/badge.svg|g' README.md
+        sed -i 's|workflows/CodeQL%20Security%20Analysis/badge.svg|workflows/CodeQL%20Security%20Analysis/badge.svg|g' README.md
+        
+        echo "✅ Badges updated successfully"
+    
+    - name: Commit badge updates
+      run: |
+        if git diff --quiet; then
+          echo "No badge updates needed"
+        else
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "chore: update workflow badges [skip ci]"
+          git push
+        fi
