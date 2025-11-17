@@ -1,252 +1,210 @@
-# Contributing to MongoDB Kafka Data Streaming
+# 🤝 Contributing to MongoDB Kafka Data Streaming
 
-🎉 Thank you for considering contributing to MongoDB Kafka Data Streaming! 
+Thank you for your interest in contributing! This document provides guidelines for contributing to this project.
 
-## 📋 Table of Contents
-
-- [Code of Conduct](#code-of-conduct)
-- [How Can I Contribute?](#how-can-i-contribute)
-- [Development Setup](#development-setup)
-- [Pull Request Process](#pull-request-process)
-- [Coding Standards](#coding-standards)
-- [Testing Guidelines](#testing-guidelines)
-- [Documentation](#documentation)
-
-## Code of Conduct
-
-This project adheres to a code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
-
-## How Can I Contribute?
-
-### 🐛 Reporting Bugs
-
-Before creating bug reports, please check the existing issues to avoid duplicates. When creating a bug report, include:
-
-- **Clear title and description**
-- **Steps to reproduce** the issue
-- **Expected vs actual behavior**
-- **Environment details** (Java version, OS, etc.)
-- **Log files** if applicable
-
-### 💡 Suggesting Enhancements
-
-Enhancement suggestions are welcome! Please provide:
-
-- **Clear title and description**
-- **Use case** for the enhancement
-- **Proposed implementation** (if you have ideas)
-- **Alternative solutions** considered
-
-### 🔧 Code Contributions
-
-1. **Fork** the repository
-2. **Create** a feature branch from `main`
-3. **Make** your changes
-4. **Add** tests for new functionality
-5. **Ensure** all tests pass
-6. **Submit** a pull request
-
-## Development Setup
+## 🚀 Quick Start for Contributors
 
 ### Prerequisites
-
 - Java 11+
 - Maven 3.6+
-- MongoDB 5.0+ (for integration tests)
-- Apache Kafka 2.0+ (for integration tests)
-- Docker (optional, for containerized testing)
+- Docker & Docker Compose
+- Git
 
-### Setup Steps
-
+### Development Setup
 ```bash
-# 1. Fork and clone your fork
+# 1. Fork and clone the repository
 git clone https://github.com/YOUR_USERNAME/MongoDb_Kafka_Data_Streaming.git
 cd MongoDb_Kafka_Data_Streaming
 
-# 2. Add upstream remote
-git remote add upstream https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming.git
-
-# 3. Install dependencies
+# 2. Install dependencies
 mvn clean install
+
+# 3. Start development environment
+cd docker
+docker compose up -d mongodb kafka zookeeper
 
 # 4. Run tests
 mvn test
 
-# 5. Run integration tests (requires MongoDB and Kafka)
-mvn verify
+# 5. Run the application
+java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar
 ```
 
-### IDE Setup
+## 📋 How to Contribute
 
-#### IntelliJ IDEA
-1. Import as Maven project
-2. Enable annotation processing
-3. Install CheckStyle plugin (optional)
+### 1. Reporting Issues
+- Use the [issue templates](.github/ISSUE_TEMPLATE/)
+- Provide clear reproduction steps
+- Include environment details
+- Add relevant logs or screenshots
 
-#### Eclipse
-1. Import as existing Maven project
-2. Enable annotation processing in project properties
+### 2. Suggesting Features
+- Check existing issues first
+- Use the feature request template
+- Explain the use case and benefits
+- Consider implementation complexity
 
-## Pull Request Process
+### 3. Code Contributions
 
-### Before Submitting
-
-- [ ] Code follows project coding standards
-- [ ] All tests pass (`mvn test`)
-- [ ] New functionality includes tests
-- [ ] Documentation updated (if applicable)
-- [ ] Commit messages follow conventional format
-
-### PR Guidelines
-
-1. **Title**: Use clear, descriptive titles
-2. **Description**: Explain what and why, not just how
-3. **Link Issues**: Reference related issues with `Fixes #123`
-4. **Small PRs**: Keep changes focused and reviewable
-5. **Tests**: Include tests for new features/bug fixes
-
-### Commit Message Format
-
+#### Branch Naming Convention
 ```
-type(scope): brief description
-
-Detailed explanation of changes (if needed)
-
-Fixes #123
+feature/add-new-connector
+bugfix/fix-memory-leak
+docs/update-readme
+refactor/improve-error-handling
 ```
 
-**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-**Examples**:
+#### Commit Message Format
 ```
-feat(kafka): add batch size configuration
-fix(mongo): handle connection timeout gracefully
+type(scope): description
+
+feat(kafka): add batch processing support
+fix(mongo): resolve connection timeout issue
 docs(readme): update installation instructions
+test(integration): add end-to-end test cases
 ```
 
-## Coding Standards
+## 🧪 Development Guidelines
 
-### Java Style Guide
+### Code Style
+- Follow Java naming conventions
+- Use meaningful variable and method names
+- Add JavaDoc for public methods
+- Keep methods under 50 lines
+- Maximum line length: 120 characters
 
-- **Indentation**: 4 spaces (no tabs)
-- **Line Length**: 120 characters max
-- **Naming**: 
-  - Classes: `PascalCase`
-  - Methods/Variables: `camelCase`
-  - Constants: `UPPER_SNAKE_CASE`
-- **Braces**: Opening brace on same line
-- **Imports**: No wildcard imports
+### Testing Requirements
+- Unit tests for all new features
+- Integration tests for external dependencies
+- Minimum 80% code coverage
+- All tests must pass before PR
 
-### Code Quality
+### Code Review Process
+1. Create feature branch from `develop`
+2. Implement changes with tests
+3. Update documentation if needed
+4. Submit pull request to `develop`
+5. Address review feedback
+6. Squash commits before merge
 
-- **Null Safety**: Use `Optional` where appropriate
-- **Exception Handling**: Catch specific exceptions
-- **Logging**: Use SLF4J with appropriate levels
-- **Comments**: Explain why, not what
-- **Method Length**: Keep methods focused and short
+## 🏗️ Architecture Guidelines
 
-### Example Code Style
+### Adding New Features
+1. **Interfaces First**: Define contracts before implementation
+2. **Dependency Injection**: Use constructor injection
+3. **Error Handling**: Implement proper exception handling
+4. **Logging**: Add appropriate log levels
+5. **Configuration**: Make features configurable
 
-```java
-public class DocumentProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(DocumentProcessor.class);
-    private static final int DEFAULT_BATCH_SIZE = 1000;
-    
-    private final KafkaProducer<String, String> producer;
-    private final int batchSize;
-    
-    public DocumentProcessor(KafkaProducer<String, String> producer, int batchSize) {
-        this.producer = Objects.requireNonNull(producer, "Producer cannot be null");
-        this.batchSize = batchSize > 0 ? batchSize : DEFAULT_BATCH_SIZE;
-    }
-    
-    public void processDocument(Document document) {
-        try {
-            String json = convertToJson(document);
-            producer.send(new ProducerRecord<>("topic", json));
-            logger.debug("Processed document: {}", document.get("_id"));
-        } catch (Exception e) {
-            logger.error("Failed to process document: {}", document.get("_id"), e);
-            throw new ProcessingException("Document processing failed", e);
-        }
-    }
-}
-```
+### Design Patterns Used
+- **Strategy Pattern**: For document processing
+- **Observer Pattern**: For event handling
+- **Factory Pattern**: For component creation
+- **Circuit Breaker**: For resilience
 
-## Testing Guidelines
-
-### Test Structure
-
-```
-src/test/java/
-├── unit/           # Unit tests (fast, isolated)
-├── integration/    # Integration tests (slower, external deps)
-└── e2e/           # End-to-end tests (full pipeline)
-```
-
-### Test Naming
-
-```java
-// Pattern: should_ExpectedBehavior_When_StateUnderTest
-@Test
-public void should_ProcessDocument_When_ValidDocumentProvided() {
-    // Arrange
-    Document document = new Document("_id", "test123");
-    
-    // Act
-    processor.processDocument(document);
-    
-    // Assert
-    verify(kafkaProducer).send(any(ProducerRecord.class));
-}
-```
-
-### Test Categories
-
-- **Unit Tests**: Test individual classes in isolation
-- **Integration Tests**: Test component interactions
-- **End-to-End Tests**: Test complete workflows
-
-### Mocking Guidelines
-
-- Use Mockito for mocking dependencies
-- Mock external services (MongoDB, Kafka)
-- Don't mock value objects or simple data structures
-
-## Documentation
+## 📚 Documentation Standards
 
 ### Code Documentation
-
-- **Public APIs**: Comprehensive JavaDoc
-- **Complex Logic**: Inline comments explaining why
-- **Configuration**: Document all configuration options
+```java
+/**
+ * Processes MongoDB documents and sends them to Kafka.
+ * 
+ * @param document The MongoDB document to process
+ * @param operation The operation type (insert, update, delete)
+ * @param source The source of the document (initial_load, change_stream)
+ * @throws DocumentProcessingException if processing fails
+ */
+public void processDocument(Document document, String operation, String source) {
+    // Implementation
+}
+```
 
 ### README Updates
+- Update feature list for new capabilities
+- Add configuration examples
+- Include troubleshooting steps
+- Update performance metrics
 
-When adding features, update:
-- Feature list
-- Configuration examples
-- Usage examples
-- Architecture diagrams (if applicable)
+## 🔍 Testing Strategy
 
-### Documentation Files
+### Unit Tests
+```java
+@ExtendWith(MockitoExtension.class)
+class DocumentProcessorTest {
+    @Mock
+    private KafkaProducer<String, String> kafkaProducer;
+    
+    @Test
+    void shouldProcessDocumentSuccessfully() {
+        // Test implementation
+    }
+}
+```
 
-- `README.md`: Main project documentation
-- `docs/`: Detailed documentation
-- `CHANGELOG.md`: Version history
-- `API.md`: API documentation (if applicable)
+### Integration Tests
+```java
+@Testcontainers
+class MongoKafkaIntegrationTest {
+    @Container
+    static MongoDBContainer mongodb = new MongoDBContainer("mongo:5.0");
+    
+    @Test
+    void shouldStreamDocumentsFromMongoToKafka() {
+        // Integration test implementation
+    }
+}
+```
 
-## Getting Help
+## 🚀 Release Process
 
-- **Questions**: Open a [Discussion](https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/discussions)
-- **Bugs**: Create an [Issue](https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/issues)
-- **Chat**: Join our community discussions
+### Version Numbering
+- **Major**: Breaking changes (1.0.0 → 2.0.0)
+- **Minor**: New features (1.0.0 → 1.1.0)
+- **Patch**: Bug fixes (1.0.0 → 1.0.1)
 
-## Recognition
+### Release Checklist
+- [ ] All tests passing
+- [ ] Documentation updated
+- [ ] Performance benchmarks verified
+- [ ] Security scan clean
+- [ ] Docker image built and tested
+- [ ] Release notes prepared
 
-Contributors will be recognized in:
-- `CONTRIBUTORS.md` file
-- Release notes for significant contributions
-- GitHub contributor graphs
+## 🏆 Recognition
 
-Thank you for contributing! 🚀
+### Contributors
+We recognize contributors in:
+- README.md contributors section
+- Release notes
+- GitHub releases
+- Project documentation
+
+### Contribution Types
+- 💻 Code contributions
+- 📖 Documentation improvements
+- 🐛 Bug reports and fixes
+- 💡 Feature suggestions
+- 🎨 UI/UX improvements
+- 🔧 DevOps and tooling
+
+## 📞 Getting Help
+
+### Communication Channels
+- **GitHub Issues**: Bug reports and feature requests
+- **GitHub Discussions**: General questions and ideas
+- **Code Reviews**: Technical discussions on PRs
+
+### Response Times
+- **Issues**: Within 48 hours
+- **Pull Requests**: Within 72 hours
+- **Security Issues**: Within 24 hours
+
+## 📄 License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
+
+---
+
+**Happy Contributing! 🎉**
+
+Your contributions help make this project better for everyone. Thank you for being part of the community!
