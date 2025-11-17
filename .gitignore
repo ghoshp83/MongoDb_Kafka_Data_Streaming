@@ -5,6 +5,32 @@
 /src/test/javascript/coverage/
 /src/test/javascript/PhantomJS*/
 
+# Application logs
+logs/
+*.log
+*.log.*
+
+# Configuration files with sensitive data
+application-local.properties
+application-dev.properties
+application-prod.properties
+*.env
+.env*
+
+# Resume tokens (local storage)
+resume-token.json
+resume-tokens/
+
+# Test data
+test-data/
+*.test
+
+# Coverage reports
+coverage/
+.nyc_output/
+jacoco.exec
+site/jacoco/
+
 ######################
 # Node
 ######################
@@ -113,9 +139,22 @@ Desktop.ini
 /deploy/
 
 ######################
-# Logs
+# Application Logs
 ######################
 *.log
+*.log.*
+logs/
+log/
+
+# JVM crash logs
+hs_err_pid*
+
+# GC logs
+gc.log*
+
+# Application specific logs
+mongodb-kafka-cdc.log*
+application.log*
 
 ######################
 # Others
@@ -125,6 +164,53 @@ Desktop.ini
 *~
 .merge_file*
 /src/main/resources/core-site.xml
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Docker
+.dockerignore
+
+# Kubernetes secrets
+kubernetes/secrets-local.yaml
+kubernetes/*-secret.yaml
+
+# AWS credentials
+.aws/
+aws-credentials.properties
+
+# Database dumps
+*.dump
+*.sql
+
+# IDE specific
+.metadata/
+.recommenders/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archive files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
 
 ######################
 # Gradle Wrapper

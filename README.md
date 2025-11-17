@@ -1,17 +1,67 @@
-# Enterprise Data Ingest
+# 🚀 MongoDB to Kafka Data Streaming
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Java-11-blue.svg" alt="Java 11">
-  <img src="https://img.shields.io/badge/Apache%20Flink-1.18.1-blue.svg" alt="Apache Flink 1.18.1">
-  <img src="https://img.shields.io/badge/MongoDB-5.0-green.svg" alt="MongoDB 5.0">
-  <img src="https://img.shields.io/badge/Kafka-2.0%2B-red.svg" alt="Kafka 2.0+">
-  <img src="https://img.shields.io/badge/AWS-S3%20%7C%20EKS-orange.svg" alt="AWS S3 | EKS">
-  <img src="https://img.shields.io/badge/License-MIT-lightgrey.svg" alt="License MIT">
+  <img src="https://img.shields.io/github/stars/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Stars">
+  <img src="https://img.shields.io/github/forks/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Forks">
+  <img src="https://img.shields.io/github/issues/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Issues">
+  <img src="https://img.shields.io/github/license/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="License">
 </div>
 
-<p align="center">A lightweight, scalable solution for streaming MongoDB documents to Kafka, supporting both initial data loading and real-time change data capture (CDC).</p>
+<div align="center">
+  <img src="https://img.shields.io/badge/Java-11+-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java 11+">
+  <img src="https://img.shields.io/badge/MongoDB-5.0+-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB 5.0+">
+  <img src="https://img.shields.io/badge/Apache_Kafka-2.0+-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Apache Kafka 2.0+">
+  <img src="https://img.shields.io/badge/AWS-S3_|_EKS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS S3 | EKS">
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Ready">
+  <img src="https://img.shields.io/badge/Kubernetes-Ready-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes Ready">
+</div>
 
-<hr>
+<p align="center">
+  <strong>🔥 Enterprise-grade, high-performance data streaming solution</strong><br>
+  Stream MongoDB documents to Kafka with real-time CDC, resumable processing, and production-ready resilience patterns
+</p>
+
+<div align="center">
+  <a href="#-quick-start">🚀 Quick Start</a> •
+  <a href="#-features">✨ Features</a> •
+  <a href="#-architecture">🏗️ Architecture</a> •
+  <a href="docs/DeploymentGuide.md">📖 Docs</a> •
+  <a href="#-contributing">🤝 Contributing</a>
+</div>
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone and build
+git clone https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming.git
+cd MongoDb_Kafka_Data_Streaming
+mvn clean package
+
+# 2. Configure (set your MongoDB and Kafka endpoints)
+export MONGODB_URI="mongodb://localhost:27017"
+export KAFKA_BOOTSTRAP_SERVERS="localhost:9092"
+export MONGODB_DATABASE="mydb"
+export MONGODB_COLLECTION="mycollection"
+export KAFKA_TOPIC="mongodb-data"
+
+# 3. Run
+java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar
+```
+
+**🐳 Docker Quick Start:**
+```bash
+docker run -p 8080:8080 \
+  -e MONGODB_URI=mongodb://host.docker.internal:27017 \
+  -e KAFKA_BOOTSTRAP_SERVERS=host.docker.internal:9092 \
+  -e MONGODB_DATABASE=mydb \
+  -e MONGODB_COLLECTION=mycollection \
+  -e KAFKA_TOPIC=mongodb-data \
+  ghoshp83/mongodb-kafka-streaming:latest
+```
+
+---
 
 ## 📋 Table of Contents
 
@@ -99,8 +149,8 @@ For more details, see the [Architecture Documentation](AmazonQ.md).
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mongoDb_to_kafka_data_streaming.git
-cd mongoDb_to_kafka_data_streaming
+git clone https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming.git
+cd MongoDb_Kafka_Data_Streaming
 
 # Build with Maven
 mvn clean package
@@ -344,6 +394,28 @@ For more details, see the [Testing Strategy Documentation](docs/TestingStrategy.
 - [Deployment Guide](docs/DeploymentGuide.md): Detailed deployment instructions
 - [Project Improvements](docs/ProjectImprovements.md): Summary of key improvements made to the project
 
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Quick Contribution Steps
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+### Development Setup
+```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/MongoDb_Kafka_Data_Streaming.git
+cd MongoDb_Kafka_Data_Streaming
+
+# Install dependencies and run tests
+mvn clean install
+mvn test
+```
+
 ## ⚠️ Limitations
 
 - The application requires MongoDB 5.0 for optimal performance
@@ -352,3 +424,17 @@ For more details, see the [Testing Strategy Documentation](docs/TestingStrategy.
 - The application does not support MongoDB transactions spanning multiple operations
 - Test compatibility issues with the new implementation structure
 - Need to ensure backward compatibility with existing databases
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## ⭐ Show Your Support
+
+Give a ⭐ if this project helped you!
+
+## 📞 Connect
+
+- **Issues**: [GitHub Issues](https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/discussions)
+- **Author**: [@ghoshp83](https://github.com/ghoshp83)
