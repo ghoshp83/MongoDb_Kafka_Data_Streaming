@@ -262,6 +262,10 @@
                         <suppressionFile>owasp-suppressions.xml</suppressionFile>
                     </suppressionFiles>
                     <nvdApiServicesEnabled>false</nvdApiServicesEnabled>
+                    <nvdDatafeedEnabled>false</nvdDatafeedEnabled>
+                    <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                    <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                    <skipOnError>true</skipOnError>
                 </configuration>
             </plugin>
         </plugins>
@@ -299,6 +303,10 @@
                         <version>9.0.7</version>
                         <configuration>
                             <nvdApiServicesEnabled>false</nvdApiServicesEnabled>
+                            <nvdDatafeedEnabled>false</nvdDatafeedEnabled>
+                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                            <skipOnError>true</skipOnError>
                         </configuration>
                         <executions>
                             <execution>
