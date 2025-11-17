@@ -23,7 +23,7 @@ FROM eclipse-temurin:11-jre
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
-RUN addgroup -g 1000 appuser && adduser -u 1000 -G appuser -s /bin/sh -D appuser
+RUN groupadd -g 1000 appuser && useradd -u 1000 -g appuser -s /bin/bash -m appuser
 
 # Set working directory
 WORKDIR /app
