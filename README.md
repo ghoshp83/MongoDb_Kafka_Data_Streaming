@@ -8,6 +8,13 @@
 </div>
 
 <div align="center">
+  <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/CI%20Pipeline/badge.svg" alt="CI Pipeline">
+  <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/Docker%20Build%20&%20Push/badge.svg" alt="Docker Build">
+  <img src="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/workflows/CodeQL%20Security%20Analysis/badge.svg" alt="CodeQL">
+  <img src="https://codecov.io/gh/ghoshp83/MongoDb_Kafka_Data_Streaming/branch/main/graph/badge.svg" alt="Coverage">
+</div>
+
+<div align="center">
   <img src="https://img.shields.io/badge/Java-11+-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java 11+">
   <img src="https://img.shields.io/badge/MongoDB-5.0+-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB 5.0+">
   <img src="https://img.shields.io/badge/Apache_Kafka-2.0+-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Apache Kafka 2.0+">
