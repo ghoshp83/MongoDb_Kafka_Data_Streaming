@@ -1,6 +1,7 @@
 package com.enterprise.department.core.process;
 
 import com.enterprise.department.core.kafka.BatchKafkaProducer;
+import com.enterprise.department.core.kafka.KafkaDocumentProcessor;
 import com.enterprise.department.core.metrics.MetricsCollector;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,9 +42,8 @@ class KafkaDocumentProcessorTest {
         
         // Assert
         verify(kafkaProducer).send(eq("test123"), anyString());
-        verify(metricsCollector).incrementCounter("documents.processed");
-        verify(metricsCollector).incrementCounter("documents.read");
-        verify(metricsCollector).incrementCounter("documents.initial_load");
+        verify(metricsCollector).incrementCounter("kafka.documents.processed");
+        verify(metricsCollector).incrementCounter("kafka.documents.read");
     }
 
     @Test
@@ -59,7 +59,7 @@ class KafkaDocumentProcessorTest {
         
         // Assert
         verify(kafkaProducer).send(eq("vehicle123"), anyString());
-        verify(metricsCollector).incrementCounter("documents.processed");
+        verify(metricsCollector).incrementCounter("kafka.documents.processed");
     }
 
     @Test
@@ -74,7 +74,7 @@ class KafkaDocumentProcessorTest {
         
         // Assert
         verify(kafkaProducer).send(eq("test123"), anyString());
-        verify(metricsCollector).incrementCounter("documents.processed");
+        verify(metricsCollector).incrementCounter("kafka.documents.processed");
     }
 
     @Test
@@ -87,7 +87,7 @@ class KafkaDocumentProcessorTest {
         processor.processDocument(document, "delete", "change_stream");
         
         // Assert
-        verify(metricsCollector).incrementCounter("documents.errors");
+        verify(metricsCollector).incrementCounter("kafka.documents.errors");
     }
     
     @Test

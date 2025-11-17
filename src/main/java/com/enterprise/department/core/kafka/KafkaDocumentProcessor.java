@@ -52,4 +52,13 @@ public class KafkaDocumentProcessor implements DocumentProcessingStrategy {
             metricsCollector.incrementCounter("kafka.documents.errors");
         }
     }
+    
+    /**
+     * Closes the processor and flushes any pending messages.
+     */
+    public void close() {
+        if (kafkaProducer != null) {
+            kafkaProducer.flush();
+        }
+    }
 }
