@@ -1,5 +1,5 @@
 # Multi-stage build for MongoDB Kafka Data Streaming
-FROM maven:3.9.5-eclipse-temurin-11-alpine AS builder
+FROM maven:3.9.6-eclipse-temurin-11 AS builder
 
 # Set working directory
 WORKDIR /app
