@@ -1,6 +1,53 @@
 version: '3.8'
 
 services:
+  # Zookeeper - Required for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - streaming-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    networks:
+      - streaming-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # MongoDB - Single node replica set for CDC
   mongodb:
     image: mongo:5.0
@@ -9,7 +56,10 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     command: ["--replSet", "rs0", "--bind_ip_all"]
+    environment:
+      MONGO_INITDB_DATABASE: mydb
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
@@ -17,39 +67,131 @@ services:
       retries: 5
       start_period: 40s
     networks:
-      - cdc-network
+      - streaming-network
 
-  # MongoDB setup - initializes the replica set
+  # MongoDB setup - initializes the replica set and sample data
   mongodb-setup:
     image: mongo:5.0
+    container_name: mongodb-setup
     depends_on:
       mongodb:
         condition: service_healthy
     restart: "no"
-    entrypoint: [ "bash", "-c", "sleep 5 && mongosh --host mongodb:27017 --eval 'rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongodb:27017\"}]})' && mongosh --host mongodb:27017 --eval 'use mydb; db.createCollection(\"mycollection\"); db.mycollection.insertMany([{name: \"Document 1\", value: 100, tags: [\"tag1\", \"tag2\"], created_at: new Date()}, {name: \"Document 2\", value: 200, tags: [\"tag2\", \"tag3\"], created_at: new Date()}, {name: \"Document 3\", value: 300, tags: [\"tag1\", \"tag3\"], created_at: new Date()}]); db.mycollection.createIndex({name: 1});'" ]
+    entrypoint: 
+      - bash
+      - -c
+      - |
+        sleep 10
+        echo "Initializing MongoDB replica set..."
+        mongosh --host mongodb:27017 --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "mongodb:27017"}]})'
+        sleep 5
+        echo "Creating sample data..."
+        mongosh --host mongodb:27017 --eval '
+          use mydb;
+          db.createCollection("mycollection");
+          db.mycollection.insertMany([
+            {name: "Product A", price: 29.99, category: "Electronics", tags: ["gadget", "popular"], created_at: new Date()},
+            {name: "Product B", price: 49.99, category: "Books", tags: ["bestseller", "fiction"], created_at: new Date()},
+            {name: "Product C", price: 19.99, category: "Clothing", tags: ["summer", "sale"], created_at: new Date()},
+            {name: "Product D", price: 99.99, category: "Electronics", tags: ["premium", "gadget"], created_at: new Date()},
+            {name: "Product E", price: 15.99, category: "Books", tags: ["educational", "reference"], created_at: new Date()}
+          ]);
+          db.mycollection.createIndex({name: 1});
+          db.mycollection.createIndex({category: 1});
+          print("Sample data created successfully!");
+        '
+        echo "MongoDB setup completed!"
     networks:
-      - cdc-network
+      - streaming-network
+
+  # Kafka UI for monitoring
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - streaming-network
+    restart: unless-stopped
 
   # MongoDB Express (Web UI for MongoDB)
   mongo-express:
     image: mongo-express:latest
     container_name: mongo-express
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
-      - ME_CONFIG_MONGODB_SERVER=mongodb
-      - ME_CONFIG_BASICAUTH_USERNAME=admin
-      - ME_CONFIG_BASICAUTH_PASSWORD=password
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
     networks:
-      - cdc-network
+      - streaming-network
     restart: unless-stopped
 
+  # MongoDB Kafka Streaming Application
+  mongodb-kafka-streaming:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: mongodb-kafka-streaming
+    depends_on:
+      mongodb-setup:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+    environment:
+      # MongoDB Configuration
+      MONGODB_URI: "mongodb://mongodb:27017"
+      MONGODB_DATABASE: "mydb"
+      MONGODB_COLLECTION: "mycollection"
+      MONGODB_BATCH_SIZE: "1000"
+      
+      # Kafka Configuration
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      KAFKA_TOPIC: "mongodb-data"
+      KAFKA_CLIENT_ID: "mongo-kafka-cdc"
+      KAFKA_MAX_REQUEST_SIZE: "1048576"
+      KAFKA_ACKS: "all"
+      
+      # Application Configuration
+      INITIAL_LOAD_ENABLED: "true"
+      INITIAL_LOAD_FORCE: "false"
+      HEALTH_PORT: "8080"
+      RETRY_MAX_ATTEMPTS: "5"
+      RETRY_BACKOFF_MS: "1000"
+    volumes:
+      - app_logs:/app/logs
+    networks:
+      - streaming-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 networks:
-  cdc-network:
+  streaming-network:
     driver: bridge
+    name: mongodb-kafka-streaming
 
 volumes:
   mongodb_data:
+    name: mongodb_data
+  app_logs:
+    name: app_logs
 
