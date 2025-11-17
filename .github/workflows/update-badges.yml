@@ -18,10 +18,8 @@ jobs:
     
     - name: Update workflow badges
       run: |
-        # Update README with current workflow status
-        sed -i 's|workflows/CI%20Pipeline/badge.svg|workflows/CI%20Pipeline/badge.svg|g' README.md
-        sed -i 's|workflows/Docker%20Build%20&%20Push/badge.svg|workflows/Docker%20Build%20&%20Push/badge.svg|g' README.md
-        sed -i 's|workflows/CodeQL%20Security%20Analysis/badge.svg|workflows/CodeQL%20Security%20Analysis/badge.svg|g' README.md
+        # Ensure correct badge URLs
+        sed -i 's|workflows/Docker%20Build%20workflows.*badge.svg|workflows/Docker%20Build%20\&%20Push/badge.svg|g' README.md
         
         echo "✅ Badges updated successfully"
     
