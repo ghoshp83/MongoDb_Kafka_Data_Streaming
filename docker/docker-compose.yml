@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # MongoDB - Single node replica set for CDC
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - cdc-network
+
+  # MongoDB setup - initializes the replica set
+  mongodb-setup:
+    image: mongo:5.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: [ "bash", "-c", "sleep 5 && mongosh --host mongodb:27017 --eval 'rs.initiate({_id: \"rs0\", members: [{_id: 0, host: \"mongodb:27017\"}]})' && mongosh --host mongodb:27017 --eval 'use mydb; db.createCollection(\"mycollection\"); db.mycollection.insertMany([{name: \"Document 1\", value: 100, tags: [\"tag1\", \"tag2\"], created_at: new Date()}, {name: \"Document 2\", value: 200, tags: [\"tag2\", \"tag3\"], created_at: new Date()}, {name: \"Document 3\", value: 300, tags: [\"tag1\", \"tag3\"], created_at: new Date()}]); db.mycollection.createIndex({name: 1});'" ]
+    networks:
+      - cdc-network
+
+  # MongoDB Express (Web UI for MongoDB)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    depends_on:
+      - mongodb
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
+    networks:
+      - cdc-network
+    restart: unless-stopped
+
+networks:
+  cdc-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+
