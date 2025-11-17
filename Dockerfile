@@ -22,20 +22,14 @@ FROM eclipse-temurin:11-jre
 # Install curl for health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user for security
-RUN useradd --uid 1000 --create-home --shell /bin/bash appuser
-
 # Set working directory
 WORKDIR /app
 
 # Copy the built JAR from builder stage
 COPY --from=builder /app/target/enterprise-data-ingest-*-jar-with-dependencies.jar app.jar
 
-# Create logs directory and set permissions
-RUN mkdir -p /app/logs && chown -R appuser:appuser /app
-
-# Switch to non-root user
-USER appuser
+# Create logs directory
+RUN mkdir -p /app/logs
 
 # Expose health check port
 EXPOSE 8080
