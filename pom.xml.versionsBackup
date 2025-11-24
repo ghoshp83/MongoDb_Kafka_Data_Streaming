@@ -13,20 +13,20 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.boot.version>4.0.0</spring.boot.version>
-        <mongodb.version>5.7.0-alpha0</mongodb.version>
-        <kafka.version>4.1.1</kafka.version>
-        <slf4j.version>2.1.0-alpha1</slf4j.version>
-        <logback.version>1.5.21</logback.version>
-        <junit.version>6.1.0-M1</junit.version>
-        <mockito.version>5.2.0</mockito.version>
-        <assertj.version>4.0.0-M1</assertj.version>
-        <testcontainers.version>1.21.3</testcontainers.version>
-        <jacoco.version>0.8.14</jacoco.version>
-        <lombok.version>1.18.42</lombok.version>
-        <json.version>20250517</json.version>
-        <aws.version>2.39.2</aws.version>
-        <jackson.version>2.20.1</jackson.version>
+        <spring.boot.version>2.7.14</spring.boot.version>
+        <mongodb.version>4.7.1</mongodb.version>
+        <kafka.version>3.3.1</kafka.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
+        <junit.version>5.8.2</junit.version>
+        <mockito.version>4.5.1</mockito.version>
+        <assertj.version>3.22.0</assertj.version>
+        <testcontainers.version>1.17.3</testcontainers.version>
+        <jacoco.version>0.8.8</jacoco.version>
+        <lombok.version>1.18.24</lombok.version>
+        <json.version>20220320</json.version>
+        <aws.version>2.17.230</aws.version>
+        <jackson.version>2.13.3</jackson.version>
     </properties>
 
     <dependencies>
@@ -150,7 +150,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.21.0</version>
+            <version>3.4.5</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
