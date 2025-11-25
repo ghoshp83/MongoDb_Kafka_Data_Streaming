@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
     
     - name: Cache Maven dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -31,7 +31,7 @@ jobs:
     - name: Start test environment
       run: |
         cd docker
-        docker-compose up -d
+        docker compose up -d
         sleep 45
     
     - name: Build application
@@ -71,4 +71,4 @@ jobs:
       if: always()
       run: |
         cd docker
-        docker-compose down -v
+        docker compose down -v
