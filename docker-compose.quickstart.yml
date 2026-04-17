@@ -34,21 +34,6 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
 
-  seed:
-    image: mongo:6
-    container_name: mkds-seed
-    depends_on:
-      mongo: {condition: service_healthy}
-    restart: "no"
-    entrypoint: >
-      mongosh "mongodb://mongo:27017/?replicaSet=rs0" --quiet --eval
-      "db = db.getSiblingDB('demo');
-       db.orders.insertMany([
-         {order_id: 'A-001', amount: 42.50, status: 'placed'},
-         {order_id: 'A-002', amount: 19.99, status: 'placed'}
-       ]);
-       print('seeded ' + db.orders.countDocuments() + ' docs');"
-
   streamer:
     build: .
     image: mkds-streamer:demo
@@ -56,17 +41,21 @@ services:
     depends_on:
       mongo: {condition: service_healthy}
       kafka: {condition: service_started}
-      seed: {condition: service_completed_successfully}
     environment:
       MONGODB_URI: "mongodb://mongo:27017/?replicaSet=rs0"
       MONGODB_DATABASE: demo
       MONGODB_COLLECTION: orders
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_TOPIC: orders-cdc
-      INITIAL_LOAD_ENABLED: "true"
+      # Insert documents with mongosh after the streamer starts -- that way they
+      # flow through as change events and the resume-token recovery demo is clean.
+      INITIAL_LOAD_ENABLED: "false"
       RESUME_TOKEN_STORAGE: "local"
       RESUME_TOKEN_PATH: "/app/state/resume.token"
       HEALTH_PORT: "8080"
+      # Demo-friendly: flush every message so you can see events land in Kafka
+      # in real time. Production deployments should raise this.
+      KAFKA_BATCH_SIZE: "1"
     ports: ["8080:8080"]
     volumes:
       - streamer-state:/app/state

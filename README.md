@@ -8,6 +8,18 @@
 
 ---
 
+### 🎬 The crash-and-resume test
+
+Insert orders → kill the streamer mid-flight → insert more while it's down → restart. Every event lands in Kafka exactly once, in order — because the resume token outlives the process.
+
+<div align="center">
+  <img src="docs/demo/demo.gif" alt="MongoDB → Kafka CDC crash-and-resume demo" width="900">
+</div>
+
+> **Reproduce locally:** `docker compose -f docker-compose.quickstart.yml up -d && vhs docs/demo/demo.tape` (requires [VHS](https://github.com/charmbracelet/vhs))
+
+---
+
 <div align="center">
   <img src="https://img.shields.io/github/stars/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Stars">
   <img src="https://img.shields.io/github/forks/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Forks">
