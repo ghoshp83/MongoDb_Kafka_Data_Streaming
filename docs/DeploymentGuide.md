@@ -422,7 +422,7 @@ The application uses SLF4J with Logback for logging. Configure Logback by creati
   </root>
   
   <!-- Set specific loggers to DEBUG for more detailed logging -->
-  <logger name="com.enterprise.department" level="INFO" />
+  <logger name="com.github.ghoshp83.mongokafkastream" level="INFO" />
 </configuration>
 ```
 

@@ -18,7 +18,7 @@
         </encoder>
     </appender>
     
-    <logger name="com.enterprise.department" level="INFO" />
+    <logger name="com.github.ghoshp83.mongokafkastream" level="INFO" />
     <logger name="org.mongodb.driver" level="WARN" />
     <logger name="org.apache.kafka" level="WARN" />
     

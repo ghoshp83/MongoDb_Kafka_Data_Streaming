@@ -56,7 +56,7 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 
 # Labels for better maintainability
 LABEL maintainer="ghoshp83" \
-      version="0.1.0" \
+      version="1.0.0" \
       description="MongoDB to Kafka Data Streaming Application" \
       org.opencontainers.image.source="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming" \
       org.opencontainers.image.documentation="https://github.com/ghoshp83/MongoDb_Kafka_Data_Streaming/blob/main/README.md" \

@@ -35,7 +35,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Application Version:**
 - Version: [e.g. 0.1.0]
-- Build: [e.g. enterprise-data-ingest-0.1-jar-with-dependencies.jar]
+- Build: [e.g. enterprise-data-ingest-1.0.0-jar-with-dependencies.jar]
 
 **System Information:**
 - OS: [e.g. Ubuntu 20.04, Windows 10, macOS 12.0]

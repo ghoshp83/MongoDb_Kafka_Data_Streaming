@@ -27,7 +27,7 @@ docker compose up -d mongodb kafka zookeeper
 mvn test
 
 # 5. Run the application
-java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar
+java -jar target/enterprise-data-ingest-1.0.0-jar-with-dependencies.jar
 ```
 
 ## 📋 How to Contribute

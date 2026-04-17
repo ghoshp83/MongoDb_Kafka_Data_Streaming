@@ -5,9 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-04-17
+
+### Changed
+- **BREAKING:** Renamed root package `com.enterprise.department` → `com.github.ghoshp83.mongokafkastream`. Maven groupId moved from `com.enterprise.department` to `com.github.ghoshp83`. Update any downstream imports and Maven coordinates accordingly.
+- Cut first stable release; feature surface (resumable CDC, S3 resume tokens, circuit breaker, graceful shutdown, health endpoints) is production-ready.
 
 ### Added
+- `docker-compose.quickstart.yml` at the repo root: spins up MongoDB, Kafka, Zookeeper, a Kafka UI, and the streamer itself, plus an auto-seed script. `docker compose -f docker-compose.quickstart.yml up` and you're streaming in under 60 seconds.
 - Enhanced GitHub repository presentation with improved badges and documentation
 - Contributing guidelines and community files
 - Comprehensive changelog documentation

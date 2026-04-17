@@ -7,7 +7,7 @@ This document explains the modular architecture of the MongoDB to Kafka CDC appl
 The application follows a modular package structure that separates concerns and promotes maintainability:
 
 ```
-com.enterprise.department
+com.github.ghoshp83.mongokafkastream
 ├── api          # Public interfaces
 │   ├── ChangeEventObserver.java
 │   └── DocumentProcessingStrategy.java

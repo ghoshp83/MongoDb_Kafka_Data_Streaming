@@ -194,7 +194,7 @@ Optional.ofNullable(tokenManager.loadResumeToken())
 We reorganized the package structure for better separation of concerns:
 
 ```
-com.enterprise.department
+com.github.ghoshp83.mongokafkastream
 ├── api          # Public interfaces
 ├── config       # Configuration classes
 ├── core         # Core business logic

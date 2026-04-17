@@ -1,5 +1,13 @@
 # 🚀 MongoDB to Kafka Data Streaming
 
+**What it does:** Streams MongoDB documents into Kafka in real time via Change Streams, with resumable processing — if the streamer crashes or is restarted, it picks up from the exact document it left off on (resume tokens persisted to S3), so no events are lost and none are replayed.
+
+**Why it exists:** Most CDC pipelines break when the pod restarts — either they replay the last N hours of events into downstream consumers, or they drop whatever arrived while they were down. This project implements the resume-token-in-object-storage pattern that prevents both failure modes, plus circuit-breaker + graceful-shutdown + health-probe plumbing so the thing is actually deployable.
+
+**Quick try (60 seconds, zero setup):** `docker compose -f docker-compose.quickstart.yml up` — see [Quick Start](#-quick-start).
+
+---
+
 <div align="center">
   <img src="https://img.shields.io/github/stars/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Stars">
   <img src="https://img.shields.io/github/forks/ghoshp83/MongoDb_Kafka_Data_Streaming?style=for-the-badge" alt="GitHub Forks">
@@ -54,7 +62,7 @@ export MONGODB_COLLECTION="mycollection"
 export KAFKA_TOPIC="mongodb-data"
 
 # 3. Run
-java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar
+java -jar target/enterprise-data-ingest-1.0.0-jar-with-dependencies.jar
 ```
 
 **🐳 Docker Quick Start:**
@@ -127,7 +135,7 @@ Enterprise Data Ingest is designed to efficiently stream data from MongoDB to Ka
 The application follows a modular, component-based architecture with clear separation of concerns:
 
 ```
-com.enterprise.department
+com.github.ghoshp83.mongokafkastream
 ├── api          # Public interfaces
 ├── config       # Configuration classes
 ├── core         # Core business logic
@@ -251,14 +259,14 @@ app.retry.backoff.ms=1000
 
 ```bash
 # Run with application.properties from classpath resources
-java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar
+java -jar target/enterprise-data-ingest-1.0.0-jar-with-dependencies.jar
 
 # Run with application.properties from current directory
 cp src/main/resources/application.properties ./
-java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar
+java -jar target/enterprise-data-ingest-1.0.0-jar-with-dependencies.jar
 
 # Run with custom properties file
-java -jar target/enterprise-data-ingest-0.1-jar-with-dependencies.jar custom-config.properties
+java -jar target/enterprise-data-ingest-1.0.0-jar-with-dependencies.jar custom-config.properties
 ```
 
 ### Docker
