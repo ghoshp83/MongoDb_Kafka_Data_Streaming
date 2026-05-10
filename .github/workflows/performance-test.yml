@@ -7,11 +7,12 @@ on:
     branches: [ main ]
   schedule:
     - cron: '0 3 * * 0'  # Weekly on Sundays at 3 AM
+  workflow_dispatch:
 
 jobs:
   performance-test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || contains(github.event.pull_request.labels.*.name, 'performance')
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'performance')
     
     steps:
     - uses: actions/checkout@v4
