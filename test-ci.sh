@@ -23,10 +23,15 @@ case $TEST_TYPE in
     # Start performance monitoring
     START_TIME=$(date +%s)
     
-    # Insert test documents
-    for i in {1..1000}; do
-      mongosh --eval "db.testdata.insertOne({id: $i, data: 'test-data-$i', timestamp: new Date()})"
-    done
+    # Insert test documents inside the mongodb container (mongosh isn't on the runner host).
+    # Single invocation drives all 1000 inserts so we measure pipeline latency, not shell spin-up.
+    DB_NAME="${MONGODB_DATABASE:-perftest}"
+    COLL_NAME="${MONGODB_COLLECTION:-testdata}"
+    docker exec -i mongodb mongosh "$DB_NAME" --quiet --eval "
+      for (let i = 1; i <= 1000; i++) {
+        db['$COLL_NAME'].insertOne({id: i, data: 'test-data-' + i, timestamp: new Date()});
+      }
+    "
     
     # Wait for processing
     sleep 60
