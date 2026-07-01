@@ -1,5 +1,5 @@
 # Multi-stage build for MongoDB Kafka Data Streaming
-FROM maven:3.9.6-eclipse-temurin-11 AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:11-jre
+FROM eclipse-temurin:17-jre
 
 # Install curl for health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*

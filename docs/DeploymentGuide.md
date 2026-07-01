@@ -6,7 +6,7 @@ This guide provides detailed instructions for deploying the MongoDB to Kafka CDC
 
 Before deploying the application, ensure you have the following prerequisites:
 
-- Java 11 or higher
+- Java 17 or higher
 - MongoDB 4.0 or higher (with Change Streams enabled)
 - Apache Kafka 2.0 or higher
 - AWS account (for S3 and EKS deployment)
@@ -85,7 +85,7 @@ java -jar target/mongodb-kafka-cdc-1.0-SNAPSHOT-jar-with-dependencies.jar
 Create a `Dockerfile` in the project root:
 
 ```dockerfile
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 

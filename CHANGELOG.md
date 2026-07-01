@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-01
+
+### Changed
+- **Java 11 → 17**: Maven `source`/`target` bumped to 17; all seven GitHub
+  Actions workflows and the multi-stage Dockerfile now build/run on Temurin 17.
+- **Maven build plugins**: compiler 3.10.1→3.13.0, assembly 3.3.0→3.7.1,
+  surefire/failsafe 2.22.2→3.5.2, JaCoCo 0.8.8→0.8.12 (JDK 17 class-file
+  support).
+- **Core runtime deps**: kafka-clients 3.3.1→3.9.0, jackson 2.13.3→2.18.2,
+  aws-sdk s3 2.17.230→2.28.11, slf4j 1.7.36→2.0.16, logback 1.2.11→1.5.3,
+  lombok 1.18.24→1.18.36.
+- **Test deps**: junit-jupiter 5.8.2→5.11.4, mockito 4.5.1→5.10.0,
+  assertj 3.22.0→3.27.7.
+
+### Removed
+- Unused `spring-boot-starter`, `spring-boot-starter-actuator`,
+  `testcontainers`, `testcontainers:kafka`, and `de.flapdoodle.embed.mongo`
+  dependencies (zero references in `src/`; health checks use the in-house
+  `HealthCheckServer`, all 67 tests are Mockito unit tests). Cuts a large
+  transitive tree and its CVE surface.
+- `mockito-inline` — the inline mock-maker is the default in Mockito 5, so
+  `mockStatic`/`mockConstruction` now work via `mockito-core`.
+
 ## [1.0.0] - 2026-04-17
 
 ### Changed

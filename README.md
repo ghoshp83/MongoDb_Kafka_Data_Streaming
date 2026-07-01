@@ -35,7 +35,7 @@ Insert orders → kill the streamer mid-flight → insert more while it's down �
 </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Java-11+-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java 11+">
+  <img src="https://img.shields.io/badge/Java-17+-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java 17+">
   <img src="https://img.shields.io/badge/MongoDB-5.0+-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB 5.0+">
   <img src="https://img.shields.io/badge/Apache_Kafka-2.0+-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white" alt="Apache Kafka 2.0+">
   <img src="https://img.shields.io/badge/AWS-S3_|_EKS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS S3 | EKS">
