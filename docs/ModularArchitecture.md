@@ -8,62 +8,63 @@ The application follows a modular package structure that separates concerns and 
 
 ```
 com.github.ghoshp83.mongokafkastream
-├── api          # Public interfaces
-│   ├── ChangeEventObserver.java
-│   └── DocumentProcessingStrategy.java
 ├── config       # Configuration classes
+│   ├── AppConfig.java
 │   ├── Config.java
 │   └── ConfigLoader.java
 ├── core         # Core business logic
-│   ├── ApplicationContext.java
-│   ├── ChangeStreamProcessor.java
+│   ├── ApplicationContext.java   # Wires the components together
 │   ├── DocumentLogger.java
-│   ├── InitialLoader.java
-│   ├── LocalResumeTokenManager.java
-│   ├── ResumeTokenManager.java
-│   ├── ResumeTokenManagerFactory.java
-│   ├── S3ResumeTokenManager.java
 │   ├── kafka    # Kafka-related components
 │   │   ├── BatchKafkaProducer.java
-│   │   ├── KafkaDocumentProcessor.java
-│   │   └── KafkaFactory.java
-│   ├── mongo    # MongoDB-related components
-│   │   └── MongoConnectionPool.java
-│   ├── process  # Document processing logic
-│   │   ├── BatchDocumentProcessor.java
-│   │   ├── ChangeStreamSubject.java
-│   │   └── StreamProcessor.java
-│   ├── resilience # Resilience patterns
-│   │   └── CircuitBreaker.java
+│   │   └── KafkaProducerFactory.java
 │   ├── metrics  # Metrics collection
 │   │   └── MetricsCollector.java
+│   ├── mongo    # MongoDB-related components
+│   │   ├── ChangeStreamProcessor.java
+│   │   ├── InitialLoader.java
+│   │   ├── LocalResumeTokenManager.java
+│   │   ├── MongoConnectionPool.java
+│   │   ├── MongoFactory.java
+│   │   ├── ResumeTokenManager.java
+│   │   ├── ResumeTokenManagerFactory.java
+│   │   └── S3ResumeTokenManager.java
+│   ├── process  # Document processing logic
+│   │   ├── DocumentProcessingStrategy.java
+│   │   └── KafkaDocumentProcessor.java
+│   ├── resilience # Resilience patterns
+│   │   ├── CircuitBreaker.java
+│   │   └── CircuitBreakerOpenException.java
 │   └── shutdown # Shutdown management
-│       └── GracefulShutdown.java
+│       ├── GracefulShutdown.java
+│       └── GracefulShutdownManager.java
 ├── health       # Health check components
-│   └── HealthCheckServer.java
+│   ├── ComponentHealth.java
+│   ├── HealthCheckServer.java
+│   ├── HealthCheckService.java
+│   └── HealthStatus.java
 ├── util         # Utility classes
 │   ├── DocumentConverter.java
 │   └── JsonConverter.java
-└── MongoKafkaCdcApp.java  # Main application class
+└── EnterpriseDataIngest.java  # Main application class
 ```
 
 ## Core Modules
 
-### API Module
+### Processing Module
 
-The API module defines the public interfaces that form the contract between components:
+The `core.process` package defines the contract between the MongoDB readers and
+whatever consumes the documents they emit:
 
 ```java
 // DocumentProcessingStrategy.java
-@FunctionalInterface
-public interface DocumentProcessingStrategy {
+public interface DocumentProcessingStrategy extends AutoCloseable {
     void processDocument(Document document, String operation, String source);
-}
 
-// ChangeEventObserver.java
-@FunctionalInterface
-public interface ChangeEventObserver {
-    void onEvent(ChangeStreamDocument<Document> event);
+    // Lets the application flush the Kafka producer during shutdown.
+    @Override
+    default void close() {
+    }
 }
 ```
 
@@ -128,10 +129,9 @@ public class ApplicationContext implements AutoCloseable {
 @RequiredArgsConstructor
 public class InitialLoader {
     private final MongoClient mongoClient;
-    private final BatchDocumentProcessor batchProcessor;
     private final Config config;
-    private final MetricsCollector metrics;
-    private final CircuitBreaker mongoCircuitBreaker;
+    private final MetricsCollector metricsCollector;
+    private final DocumentProcessingStrategy processingStrategy;
     
     public void load() throws Exception {
         // Load documents from MongoDB to Kafka
@@ -144,8 +144,8 @@ public class InitialLoader {
 The Kafka module handles interaction with Apache Kafka:
 
 ```java
-// KafkaFactory.java
-public class KafkaFactory {
+// KafkaProducerFactory.java
+public class KafkaProducerFactory {
     public static KafkaProducer<String, String> createProducer(Config config) {
         // Create and configure Kafka producer
     }
@@ -194,28 +194,22 @@ public class MongoConnectionPool {
 The Process module handles document processing logic:
 
 ```java
-// BatchDocumentProcessor.java
+// KafkaDocumentProcessor.java — the strategy implementation the app wires up
 @Slf4j
 @RequiredArgsConstructor
-public class BatchDocumentProcessor {
-    private final DocumentProcessingStrategy processingStrategy;
-    
-    public void processDocuments(List<Document> documents, String operation, String source) {
-        // Process documents in batch
-    }
-}
+public class KafkaDocumentProcessor implements DocumentProcessingStrategy {
+    private final BatchKafkaProducer kafkaProducer;
+    private final MetricsCollector metricsCollector;
 
-// ChangeStreamSubject.java
-@Slf4j
-public class ChangeStreamSubject {
-    private final List<ChangeEventObserver> observers = new CopyOnWriteArrayList<>();
-    
-    public void addObserver(ChangeEventObserver observer) {
-        // Add observer
+    @Override
+    public void processDocument(Document document, String operation, String source) {
+        // Key on vuid when present, otherwise _id; wrap the document in an
+        // _operation/_source/_timestamp envelope; hand it to the batch producer.
     }
-    
-    public void notifyObservers(ChangeStreamDocument<Document> event) {
-        // Notify observers of event
+
+    @Override
+    public void close() {
+        kafkaProducer.flush();
     }
 }
 ```
@@ -322,37 +316,33 @@ public class DocumentConverter {
 
 The following diagram illustrates how the main components interact:
 
+```mermaid
+flowchart TD
+    App[EnterpriseDataIngest] --> Ctx[ApplicationContext]
+    Ctx --> IL[InitialLoader]
+    Ctx --> CSP[ChangeStreamProcessor]
+    Ctx --> Strategy[DocumentProcessingStrategy]
+
+    IL -->|backfill: source=initial_load| Strategy
+    CSP -->|live CDC: source=change_stream| Strategy
+    CSP --> RTM[ResumeTokenManager]
+
+    Strategy --> KDP[KafkaDocumentProcessor]
+    KDP --> BKP[BatchKafkaProducer]
+    KDP --> Metrics[MetricsCollector]
+    BKP --> Kafka[(Kafka topic)]
+    RTM --> Store[(Resume token: local file or S3)]
 ```
-┌─────────────────┐     ┌───────────────────┐     ┌───────────────────┐
-│ MongoKafkaCdcApp│────▶│ ApplicationContext│────▶│ InitialLoader     │
-└─────────────────┘     └───────────────────┘     └───────────────────┘
-                              │                           │
-                              │                           ▼
-                              │                   ┌───────────────────┐
-                              │                   │ BatchDocument     │
-                              │                   │ Processor         │
-                              │                   └───────────────────┘
-                              │                           │
-                              ▼                           ▼
-┌─────────────────┐     ┌───────────────────┐     ┌───────────────────┐
-│ ChangeStream    │────▶│ ChangeStream      │────▶│ DocumentProcessing│
-│ Subject         │     │ Processor         │     │ Strategy          │
-└─────────────────┘     └───────────────────┘     └───────────────────┘
-       ▲                        │                           │
-       │                        │                           │
-       │                        ▼                           ▼
-┌─────────────────┐     ┌───────────────────┐     ┌───────────────────┐
-│ StreamProcessor │     │ ResumeToken       │     │ BatchKafka        │
-│                 │     │ Manager           │     │ Producer          │
-└─────────────────┘     └───────────────────┘     └───────────────────┘
-```
+
+Both readers write through the same `DocumentProcessingStrategy`, which is why
+a backfilled document and a live change event arrive on the topic in the same
+shape — distinguishable only by the `_source` field in the metadata envelope.
 
 ## Benefits of Modular Architecture
 
 ### 1. Separation of Concerns
 
 Each module has a clear responsibility:
-- **API**: Defines interfaces
 - **Config**: Manages configuration
 - **Core**: Implements business logic
 - **Kafka**: Handles Kafka interaction

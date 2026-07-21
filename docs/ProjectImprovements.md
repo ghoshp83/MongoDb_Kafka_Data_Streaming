@@ -20,27 +20,18 @@ public class KafkaDocumentProcessor implements DocumentProcessingStrategy {
 }
 ```
 
-### Observer Pattern
-We applied the Observer pattern for change stream events, decoupling event generation from event handling:
+### Shared Processing Path
+Both the initial backfill and the live change stream write through the same
+`DocumentProcessingStrategy`, so a document produced by either route reaches
+Kafka in an identical shape and is told apart only by its `_source` field:
 
 ```java
-@FunctionalInterface
-public interface ChangeEventObserver {
-    void onEvent(ChangeStreamDocument<Document> event);
-}
+// InitialLoader and ChangeStreamProcessor both hold this one interface
+public interface DocumentProcessingStrategy extends AutoCloseable {
+    void processDocument(Document document, String operation, String source);
 
-@Slf4j
-public class ChangeStreamSubject {
-    private final List<ChangeEventObserver> observers = new CopyOnWriteArrayList<>();
-    
-    public void notifyObservers(ChangeStreamDocument<Document> event) {
-        observers.forEach(observer -> {
-            try {
-                observer.onEvent(event);
-            } catch (Exception e) {
-                log.error("Error in observer", e);
-            }
-        });
+    @Override
+    default void close() {
     }
 }
 ```

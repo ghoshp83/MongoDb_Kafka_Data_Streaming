@@ -101,7 +101,7 @@ Retry mechanisms help handle transient failures by automatically retrying operat
 ### Implementation
 
 ```java
-// In KafkaFactory
+// In KafkaProducerFactory
 public static KafkaProducer<String, String> createProducer(Config config) {
     Properties props = new Properties();
     // Basic configuration
@@ -274,19 +274,23 @@ Comprehensive error handling ensures that the application can recover from or gr
 ### Implementation
 
 ```java
-// In ChangeStreamSubject
-public void notifyObservers(ChangeStreamDocument<Document> event) {
-    String operationType = event.getOperationType().getValue();
-    log.debug("Notifying {} observers of {} event", observers.size(), operationType);
-    
-    observers.forEach(observer -> {
-        try {
-            observer.onEvent(event);
-        } catch (Exception e) {
-            log.error("Error in observer while processing {} event", operationType, e);
-            // Continue with other observers even if one fails
-        }
-    });
+// In KafkaDocumentProcessor
+@Override
+public void processDocument(Document document, String operation, String source) {
+    try {
+        String documentId = extractDocumentId(document);
+        String documentJson = convertToJsonWithMetadata(document, operation, source);
+        kafkaProducer.send(documentId, documentJson);
+
+        metricsCollector.incrementCounter("documents.processed");
+        metricsCollector.incrementCounter("documents." + operation);
+        metricsCollector.incrementCounter("documents." + source);
+    } catch (Exception e) {
+        // A single malformed or unsendable document must not tear down the
+        // change-stream loop; count it and carry on with the next one.
+        logger.error("Error processing document: {}", e.getMessage(), e);
+        metricsCollector.incrementCounter("documents.errors");
+    }
 }
 ```
 

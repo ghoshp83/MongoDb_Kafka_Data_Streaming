@@ -9,24 +9,31 @@ The Strategy pattern allows us to define a family of algorithms, encapsulate eac
 ### Implementation
 
 ```java
-// Interface defining the strategy
-@FunctionalInterface
-public interface DocumentProcessingStrategy {
+// Interface defining the strategy. AutoCloseable so the application can
+// flush whatever the strategy has buffered during a graceful shutdown.
+public interface DocumentProcessingStrategy extends AutoCloseable {
     void processDocument(Document document, String operation, String source);
+
+    @Override
+    default void close() {
+    }
 }
 
 // Concrete implementation for Kafka
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaDocumentProcessor implements DocumentProcessingStrategy {
-    private final KafkaProducer<String, String> kafkaProducer;
-    private final String topic;
-    private final BatchKafkaProducer batchProducer;
-    private final boolean useBatch;
+    private final BatchKafkaProducer kafkaProducer;
+    private final MetricsCollector metricsCollector;
     
     @Override
     public void processDocument(Document document, String operation, String source) {
         // Implementation details
+    }
+    
+    @Override
+    public void close() {
+        kafkaProducer.flush();
     }
 }
 ```
@@ -37,64 +44,6 @@ public class KafkaDocumentProcessor implements DocumentProcessingStrategy {
 2. **Testability**: Each strategy can be tested in isolation
 3. **Extensibility**: New strategies can be added without changing client code
 4. **Separation of concerns**: Processing logic is separated from document retrieval
-
-## Observer Pattern
-
-The Observer pattern establishes a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically. We use this pattern for change stream events.
-
-### Implementation
-
-```java
-// Observer interface
-@FunctionalInterface
-public interface ChangeEventObserver {
-    void onEvent(ChangeStreamDocument<Document> event);
-}
-
-// Subject that manages observers
-@Slf4j
-public class ChangeStreamSubject {
-    private final List<ChangeEventObserver> observers = new CopyOnWriteArrayList<>();
-    
-    public void addObserver(ChangeEventObserver observer) {
-        observers.add(observer);
-    }
-    
-    public void removeObserver(ChangeEventObserver observer) {
-        observers.remove(observer);
-    }
-    
-    public void notifyObservers(ChangeStreamDocument<Document> event) {
-        observers.forEach(observer -> {
-            try {
-                observer.onEvent(event);
-            } catch (Exception e) {
-                log.error("Error in observer", e);
-            }
-        });
-    }
-}
-
-// Concrete observer
-@Slf4j
-@RequiredArgsConstructor
-public class StreamProcessor implements ChangeEventObserver {
-    private final DocumentProcessingStrategy documentProcessor;
-    private final Config config;
-    
-    @Override
-    public void onEvent(ChangeStreamDocument<Document> event) {
-        // Process the event
-    }
-}
-```
-
-### Benefits
-
-1. **Loose coupling**: The subject doesn't need to know anything about its observers
-2. **Broadcast communication**: Multiple components can react to the same event
-3. **Dynamic relationships**: Observers can be added or removed at runtime
-4. **Extensibility**: New observers can be added without modifying the subject
 
 ## Factory Pattern
 
@@ -258,9 +207,6 @@ public class ApplicationContext implements AutoCloseable {
     private final ResumeTokenManager tokenManager;
     private final BatchKafkaProducer batchKafkaProducer;
     private final DocumentProcessingStrategy documentProcessor;
-    private final BatchDocumentProcessor batchDocumentProcessor;
-    private final ChangeStreamSubject changeStreamSubject;
-    private final StreamProcessor streamProcessor;
     
     // Support components
     private final MetricsCollector metricsCollector;
@@ -277,7 +223,7 @@ public class ApplicationContext implements AutoCloseable {
         this.mongoCircuitBreaker = new CircuitBreaker("MongoDB", 3, 30000);
         this.kafkaCircuitBreaker = new CircuitBreaker("Kafka", 3, 10000);
         this.mongoClient = MongoConnectionPool.getClient(config);
-        this.kafkaProducer = KafkaFactory.createProducer(config);
+        this.kafkaProducer = KafkaProducerFactory.createProducer(config);
         this.tokenManager = ResumeTokenManagerFactory.createResumeTokenManager(config);
         
         // Initialize other components
@@ -297,7 +243,6 @@ public class ApplicationContext implements AutoCloseable {
 By applying these design patterns, we've created a modular, extensible, and maintainable application. Each pattern addresses specific concerns:
 
 - **Strategy Pattern**: Flexible document processing
-- **Observer Pattern**: Decoupled event handling
 - **Factory Pattern**: Simplified component creation
 - **Singleton Pattern**: Efficient resource sharing
 - **Circuit Breaker Pattern**: Improved resilience

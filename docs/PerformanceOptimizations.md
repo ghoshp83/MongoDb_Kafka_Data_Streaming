@@ -113,7 +113,7 @@ Optimizing Kafka producer settings improves throughput and reduces latency when 
 
 ```java
 @Slf4j
-public class KafkaFactory {
+public class KafkaProducerFactory {
     public static KafkaProducer<String, String> createProducer(Config config) {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getKafkaBootstrapServers());
@@ -155,19 +155,20 @@ Using Java streams for document processing provides concise, efficient, and read
 ```java
 @Slf4j
 @RequiredArgsConstructor
-public class BatchDocumentProcessor {
+public class InitialLoader {
+    private final MongoClient mongoClient;
+    private final Config config;
+    private final MetricsCollector metricsCollector;
     private final DocumentProcessingStrategy processingStrategy;
-    
-    public void processDocuments(List<Document> documents, String operation, String source) {
-        if (documents == null || documents.isEmpty()) {
-            return;
+
+    public void load() {
+        // Documents stream out of the cursor and are handed straight to the
+        // strategy one at a time, so the whole collection is never held in
+        // memory. Batching happens downstream in BatchKafkaProducer, which
+        // amortises the network round trip without buffering the read side.
+        for (Document document : collection.find().batchSize(config.getBatchSize())) {
+            processingStrategy.processDocument(document, "read", "initial_load");
         }
-        
-        // Use Java streams for efficient processing
-        documents.stream()
-            .peek(doc -> DocumentLogger.logDocument(doc, operation, source))
-            .map(doc -> new AbstractMap.SimpleEntry<>(doc, DocumentConverter.extractId(doc)))
-            .forEach(entry -> processingStrategy.processDocument(entry.getKey(), operation, source));
     }
 }
 ```

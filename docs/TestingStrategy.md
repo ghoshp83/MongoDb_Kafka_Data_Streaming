@@ -125,10 +125,9 @@ Integration tests verify that different components work together correctly, usin
        );
        
        DocumentProcessingStrategy mockStrategy = mock(DocumentProcessingStrategy.class);
-       BatchDocumentProcessor processor = new BatchDocumentProcessor(mockStrategy);
        
        // Act
-       InitialLoader loader = new InitialLoader(mockClient, processor, config, metrics, circuitBreaker);
+       InitialLoader loader = new InitialLoader(mockClient, config, metrics, mockStrategy);
        loader.load();
        
        // Assert
@@ -136,23 +135,23 @@ Integration tests verify that different components work together correctly, usin
    }
    ```
 
-2. **Change Stream to Observer**
+2. **Change Stream to Processing Strategy**
    ```java
    @Test
-   void testChangeStreamProcessorNotifiesObservers() {
+   void testChangeStreamProcessorForwardsEventsToStrategy() {
        // Arrange
-       ChangeStreamSubject subject = new ChangeStreamSubject();
-       ChangeEventObserver mockObserver = mock(ChangeEventObserver.class);
-       subject.addObserver(mockObserver);
-       
+       DocumentProcessingStrategy mockStrategy = mock(DocumentProcessingStrategy.class);
        ChangeStreamDocument<Document> mockEvent = mock(ChangeStreamDocument.class);
        when(mockEvent.getOperationType()).thenReturn(OperationType.INSERT);
+       when(mockEvent.getFullDocument()).thenReturn(new Document("_id", "1"));
        
        // Act
-       subject.notifyObservers(mockEvent);
+       processor.handleEvent(mockEvent);
        
-       // Assert
-       verify(mockObserver).onEvent(mockEvent);
+       // Assert: the source tag is what lets consumers tell live CDC events
+       // apart from documents replayed by the initial backfill.
+       verify(mockStrategy).processDocument(
+           any(Document.class), eq("insert"), eq("change_stream"));
    }
    ```
 
