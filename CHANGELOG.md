@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+- **The `api` package and the unreachable processing lineage hanging off it.**
+  Two parallel sets of processing classes coexisted. The live one is rooted at
+  `core.process.DocumentProcessingStrategy`; the other was rooted at
+  `api.DocumentProcessingStrategy` and had no callers. Removed
+  `api.DocumentProcessingStrategy`, `api.ChangeEventObserver`,
+  `core.process.DocumentProcessor`, `core.process.BatchDocumentProcessor`,
+  `core.process.StreamProcessor`, `core.process.ChangeStreamSubject`, and the
+  duplicate `core.kafka.KafkaDocumentProcessor`.
+- **Flat `core/` classes left behind by the subpackage migration.**
+  `ChangeStreamProcessor`, `InitialLoader`, `KafkaFactory`,
+  `LocalResumeTokenManager`, `MongoFactory`, `ResumeTokenManager`,
+  `ResumeTokenManagerFactory`, and `S3ResumeTokenManager` had all been
+  superseded by copies under `core/mongo` and `core/kafka`, which are what
+  `ApplicationContext` wires up. Also removed the unused
+  `core.kafka.KafkaFactory` and a stray non-test `KafkaDocumentProcessor.java`
+  that had been committed under `src/test`.
+
+### Fixed
+- **`KafkaDocumentProcessorTest` tested the wrong class.** It imported the
+  orphaned `core.kafka` copy while `ApplicationContext` constructs the
+  `core.process` one, so the production processing path was uncovered. The two
+  had diverged: the live implementation prefers the `vuid` field as the Kafka
+  record key, wraps payloads in an `_operation`/`_source`/`_timestamp`
+  envelope, and emits `documents.*` counters, where the orphan delegated to
+  `DocumentConverter` and emitted `kafka.documents.*`. Repointed the suite and
+  added coverage for the metadata envelope (68 tests, up from 67).
+- Architecture docs described the pre-migration package layout and several
+  deleted classes. Package tree, component diagram, and all code examples now
+  match the source.
+
+### Note
+- `pom.xml` still declares `1.0.0` while this changelog records a `1.1.0`
+  release; the version was not bumped at that release and is left untouched
+  here.
+
 ## [1.1.0] - 2026-07-01
 
 ### Changed
